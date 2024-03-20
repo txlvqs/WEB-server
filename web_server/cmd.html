@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My CMD</title>
+    <style>
+        body {
+            background-color: #fff;
+            color: #000;
+            font-family: monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #commandLine {
+            width: 80%;
+            height: 50%;
+            border: none;
+            background-color: #000;
+            color: #fff;
+            font-family: monospace;
+            resize: none;
+            overflow: auto;
+        }
+        #commandLine:focus {
+            outline: none;
+        }
+        #backButton {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color:  #4682B4;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <button id="backButton" onclick="goBack()">back</button>
+    <textarea id="commandLine" rows="20" placeholder="$:"></textarea>
+
+    <script>
+        document.getElementById("commandLine").addEventListener("keypress", function(e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                sendCommand();
+            }
+        });
+
+        function sendCommand() {
+            var command = 'cmd=' + document.getElementById("commandLine").value;
+            var xhr = new XMLHttpRequest();
+            
+            xhr.open("POST", "http://192.168.62.11:8696", true);
+            xhr.setRequestHeader("Content-Type", "text/plain");
+            xhr.send(command);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var response = xhr.responseText;
+                    
+                    document.getElementById("commandLine").value +=response;
+                }
+            };
+            
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+</body>
+</html>
+

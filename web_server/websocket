@@ -1,0 +1,93 @@
+#include <libwebsockets.h>
+#include <string.h>
+#include <stdio.h>
+
+// HTTP请求处理函数
+static int callback_http(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t len)
+{
+    switch (reason) {
+        case LWS_CALLBACK_HTTP:
+            // 处理普通的 HTTP 请求
+            // 检查请求中是否包含特定的信息，以确定是否需要升级为 WebSocket 连接
+            if (strstr((const char *)in, "Upgrade: websocket") != NULL) {
+                // 如果需要升级为 WebSocket 连接，创建一个 WebSocket 连接
+                lws_callback_on_writable(wsi);
+            } else {
+                // 处理普通的 HTTP 请求
+                // ...
+            }
+            break;
+
+        case LWS_CALLBACK_SERVER_WRITEABLE:
+            // 在这里创建 WebSocket 连接
+            struct lws_client_connect_info ccinfo = {0};
+            ccinfo.context = lws_get_context(wsi);
+            ccinfo.address = "your_websocket_server_address";
+            ccinfo.port = 80;
+            ccinfo.path = "/your_websocket_path";
+            ccinfo.host = ccinfo.address;
+            ccinfo.origin = ccinfo.address;
+            ccinfo.protocol = "your_websocket_protocol";
+            ccinfo.ietf_version_or_minus_one = -1;
+            ccinfo.pwsi = &wsi;
+            lws_client_connect_via_info(&ccinfo);
+            break;
+
+        default:
+            break;
+    }
+
+    return 0;
+}
+
+// WebSocket回调函数
+static int callback_websockets(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t len)
+{
+    switch (reason) {
+        case LWS_CALLBACK_ESTABLISHED:
+            // 新的 WebSocket 连接已建立
+            printf("WebSocket connection established\n");
+            break;
+
+        case LWS_CALLBACK_RECEIVE:
+            // 接收到来自客户端的消息
+            char buf[512];
+            strncpy(buf, (char *)in, sizeof(buf) - 1);
+            buf[sizeof(buf) - 1] = '\0';
+            printf("Received message: %s\n", buf);
+
+            // 发送回复消息
+            lws_write(wsi, (unsigned char *)"Hello, client!", 14, LWS_WRITE_TEXT);
+            break;
+
+        default:
+            break;
+    }
+
+    return 0;
+}
+
+int main()
+{
+    struct lws_context_creation_info info;
+    memset(&info, 0, sizeof(info));
+
+    // 创建 libwebsockets 上下文
+    struct lws_context *context = lws_create_context(&info);
+    if (!context) {
+        // 处理创建上下文失败的情况
+        return -1;
+    }
+
+    // 创建虚拟主机
+    // ...
+
+    while (1) {
+        lws_service(context, 50);
+        // 可以在这里处理其他任务
+    }
+
+    lws_context_destroy(context);
+
+    return 0;
+}

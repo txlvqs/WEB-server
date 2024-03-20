@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>音乐播放器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        h1 {
+            color: #1E90FF; /* 蓝色 */
+        }
+        .audio-player {
+            margin: 20px;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #1E90FF; /* 蓝色 */
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>listen to music</h1>
+    <div class="audio-player">
+        <audio controls>
+            <source src="music/a.mp3" type="audio/mpeg">
+            您的浏览器不支持音频播放。
+        </audio>
+    </div>
+    <button class="button" onclick="history.back()">BACK!</button>
+</body>
+</html>
+

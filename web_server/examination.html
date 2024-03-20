@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>在线考试</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f8ff; /* 浅蓝色 */
+    }
+    h1 {
+      text-align: center;
+      margin-top: 20px;
+    }
+    #questions {
+      text-align: center;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    input[type="text"] {
+      padding: 5px;
+      margin-left: 10px;
+    }
+    button {
+      padding: 10px 20px;
+      margin-top: 10px;
+      background-color: #6495ED; /* 淡蓝色 */
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #countdown {
+      text-align: center;
+      margin-top: 20px;
+    }
+    #score {
+      background-color: #6495ED; /* 浅蓝色 */
+      color: #fff;
+      padding: 10px;
+      border-radius: 10px;
+      text-align: center;
+      margin-top: 20px;
+      font-size: 24px;
+    }
+    .button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background-color: #6495ED; /* 钢蓝色按钮 */
+      color: white;
+      text-align: center;
+      text-decoration: none;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 10px;
+      display: inline-block;
+      transition: background-color 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+  <h1>在线考试</h1>
+  <div id="questions">
+    <div>
+      <p>1. 2 + 3 = <input type="text" id="q1"></p>
+    </div>
+    <div>
+      <p>2. 5 - 2 = <input type="text" id="q2"></p>
+    </div>
+    <div>
+      <p>3. 4 + 6 = <input type="text" id="q3"></p>
+    </div>
+    <div>
+      <p>4. 9 - 3 = <input type="text" id="q4"></p>
+    </div>
+    <div>
+      <p>5. 7 + 8 = <input type="text" id="q5"></p>
+    </div>
+    <button onclick="submitAnswers()">提交答案</button>
+  </div>
+  <p id="countdown">倒计时: 5:00</p>
+  <div id="score">分数：--</div>
+  <a class="button" href="javascript:history.back()">back</a>
+
+  <script>
+    // 倒计时函数
+    function countdown(minutes, seconds, submitFunction) {
+      var secondsLeft = minutes * 60 + seconds;
+      var interval = setInterval(function() {
+        var minutes = Math.floor(secondsLeft / 60);
+        var seconds = secondsLeft % 60;
+        document.getElementById("countdown").innerHTML = "倒计时: " + minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+        secondsLeft--;
+
+        if (secondsLeft < 0) {
+          clearInterval(interval);
+          submitFunction();
+        }
+      }, 1000);
+    }
+
+    // 提交答案函数
+    function submitAnswers() {
+      var q1 = document.getElementById("q1").value;
+      var q2 = document.getElementById("q2").value;
+      var q3 = document.getElementById("q3").value;
+      var q4 = document.getElementById("q4").value;
+      var q5 = document.getElementById("q5").value;
+
+      var data = "examination=" + "&q1=" + q1 + "&q2=" + q2 + "&q3=" + q3 + "&q4=" + q4 + "&q5=" + q5;
+
+      // 发送 POST 请求到服务器
+      fetch('http://192.168.62.11:8696', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: data
+      })
+      .then(response => {
+        // 处理响应
+        return response.text();
+      })
+      
+      .then(score => {
+        // 显示分数
+        document.getElementById("score").innerHTML = "分数：" + score;
+      })
+      
+      .catch(error => {
+        // 处理错误
+        console.error('答案提交失败', error);
+      });
+    }
+
+    // 调用倒计时函数，传入倒计时时间和提交函数
+    countdown(5, 0, submitAnswers);
+  </script>
+</body>
+</html>

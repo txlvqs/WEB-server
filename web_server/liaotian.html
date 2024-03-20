@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Interface</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+        }
+
+        .chat-container {
+            max-width: 500px;
+            margin: 20px auto;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background-color: #4fc3f7;
+            color: #fff;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header h2 {
+            margin: 0;
+        }
+
+        .chat-messages {
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .chat-message {
+            background-color: #e0f7fa;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            max-width: 70%;
+        }
+
+        .chat-message.sent {
+            align-self: flex-end;
+            background-color: #dcf8c6;
+        }
+
+        .chat-message.received {
+            align-self: flex-start;
+        }
+
+        .chat-input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 20px;
+            outline: none;
+        }
+
+        .send-button {
+            padding: 10px 20px;
+            background-color: #4fc3f7;
+            color: #fff;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <button onclick="login()">登录</button> <!-- 新增的登录按钮 -->
+        <div class="chat-header">
+            <h3>欢迎使用微信<br>请先登录后使用</h3>
+            <button onclick="goBack()">Back</button>
+        </div>
+        <div class="chat-messages" id="message-box"></div>
+        <div style="display: flex; align-items: center; padding: 10px;">
+            <input type="text" class="chat-input" id="chat-input">
+            <button class="send-button" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        function login() {
+            // 在这里添加处理登录的逻辑
+            displayMessage("已登录，成功进入聊天室...");
+            fetch('http://192.168.62.11:8696', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/plain'
+                },
+                body: "message->login"
+            })
+        }
+
+        function sendMessage() {
+            var message = document.getElementById('chat-input').value;
+            displayMessage("You: " + message, 'sent');
+            var params = 'message=' + document.getElementById('chat-input').value;
+            document.getElementById('chat-input').value = '';
+
+            // 发送消息到服务器
+            fetch('http://192.168.62.11:8696', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/plain'
+                },
+                body: params
+            })
+            .then(response => response.text())
+            .then(data => {
+                displayMessage("other: " + data, 'received');
+            });
+        }
+
+        function displayMessage(message, type) {
+            var messageBox = document.getElementById('message-box');
+            var p = document.createElement('p');
+            p.textContent = message;
+            p.className = 'chat-message ' + type;
+            messageBox.appendChild(p);
+        }
+
+        function goBack() {
+            fetch('http://192.168.62.11:8696', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/plain'
+                },
+                body: "message->back"
+            })
+            history.back();
+        }
+    </script>
+</body>
+</html>
+

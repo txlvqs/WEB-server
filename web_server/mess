@@ -1,0 +1,96 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <netinet/tcp.h>
+#include <pthread.h>
+
+int main()
+{
+    char *mes;
+    int arr[5];
+    char buffer[1024] = "";
+    printf("准备接收链接\n");
+    // 创建套接字
+    int server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (server_fd == -1)
+    {
+        perror("套接字创建失败\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // 设置服务器地址
+    struct sockaddr_in server_addr;
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = inet_addr("192.168.62.11");
+    server_addr.sin_port = htons(8696);
+
+    // 绑定套接字
+    if (bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
+    {
+        perror("绑定失败");
+        exit(EXIT_FAILURE);
+    }
+
+    // 设端口复用
+    int val = 1;
+    setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val));
+
+    // 监听连接
+    if (listen(server_fd, 5) < 0)
+    {
+        perror("监听失败\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // int flag = 1;
+    // setsockopt(server_fd, IPPROTO_TCP, TCP_NODELAY, (char *)&flag, sizeof(int));
+
+    // 开始连接
+        printf("--------------在循环中等待下次连接---------------");
+        // 对监听到的连接分配新套接字产生连接
+
+        int client_fd; // 服务器套接字
+        struct sockaddr_in client_addr;
+        int client_addr_len = sizeof(client_addr);
+
+        client_fd = accept(server_fd, (struct sockaddr *)&client_addr, (socklen_t *)&client_addr_len);
+        if (client_fd < 0)
+        {
+            perror("Error Link bad\n");
+            exit(EXIT_FAILURE);
+        }
+        else
+            printf("链接成功\n");
+
+        printf("成功进入广播函数\n");
+
+
+
+        char pos[] = "HTTP/1.1 200 OK\r\n" // POST报头
+                     "Content-Type: text/plain\r\n"
+                     "Access-Control-Allow-Origin: *\r\n"
+                     "Content-Lenth:60\r\n"
+                     "atche-Control:public\r\n\r\n"
+                     "hello world";
+
+
+        // 发送
+        printf("---------------------即将发送广播消息\n");
+        printf("发送内容：%s\n", pos);
+        send(client_fd, pos, strlen(pos), 0);
+        // send(client_socket,buffer,strlen(buffer),MSG_DONTWAIT);
+
+        // send(client_socket,buffer,strlen(buffer),0);//发内容
+
+        close(client_fd);
+        while(1);
+
+}
